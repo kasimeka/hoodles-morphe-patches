@@ -42,6 +42,7 @@ val enablePremiumPatch = bytecodePatch(
 
         GetTierFingerprint.match(ApiUserAccessToStringFingerprint.classDef)
             .method.returnEarly(tier.wireValue)
+        UserEntityGetAccessTierFingerprint.method.returnEarly(tier.wireValue)
 
         GetHasActiveSubscriptionFingerprint.method.returnEarly(true)
         IsPremiumFingerprint.match(PremiumUserCtorFingerprint.classDef).method.returnEarly(true)
