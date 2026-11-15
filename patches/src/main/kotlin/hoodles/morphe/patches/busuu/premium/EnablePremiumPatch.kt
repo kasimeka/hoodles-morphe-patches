@@ -6,6 +6,7 @@
 package hoodles.morphe.patches.busuu.premium
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import java.util.logging.Logger
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
@@ -53,13 +54,17 @@ val enablePremiumPatch = bytecodePatch(
 
         if (tier == PremiumTier.PREMIUM_PLUS) {
             IsPremiumAccountFingerprint.method.returnEarly(true)
-            CourseBannerStateFingerprint.method.addInstructions(
-                0,
-                """
-                    sget-object p0, Lihj${'$'}b;->a:Lihj${'$'}b;
-                    return-object p0
-                """.trimIndent()
-            )
+            runCatching {
+                CourseBannerStateFingerprint.method.addInstructions(
+                    0,
+                    """
+                        sget-object p0, Lihj${'$'}b;->a:Lihj${'$'}b;
+                        return-object p0
+                    """.trimIndent()
+                )
+            }.onFailure {
+                Logger.getLogger(this::class.java.name).warning("Course banner hook skipped: ${it.message}")
+            }
             LessonStateFingerprint.method.let { method ->
                 val returnIndexes = method.instructions.withIndex()
                     .filter { it.value.opcode == Opcode.RETURN_OBJECT }
